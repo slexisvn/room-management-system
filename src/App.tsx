@@ -1,26 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useContext } from 'react';
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
+import { AuthenticationContext } from './authentication-provider';
+import LoginPage from './login';
+import Dashboard from './dashboard';
 
-function App() {
+const App = () => {
+  const { authenticate } = useContext(AuthenticationContext);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter basename='/'>
+      <Switch>
+        <Route
+          path='/'
+          render={routeProps => {
+            if (authenticate) {
+              return (
+                <Switch>
+                  <Route exact path='/analysis' key='analysis' render={() => <Dashboard />} />
+                  <Redirect to='/analysis' />
+                </Switch>
+              );
+            }
+
+            return (
+              <Switch>
+                <Route
+                  exact
+                  path='/login'
+                  key='login'
+                  render={() => <LoginPage {...routeProps} />}
+                />
+                <Redirect to='/login' />
+              </Switch>
+            );
+          }}
+        />
+      </Switch>
+    </BrowserRouter>
   );
-}
+};
 
 export default App;

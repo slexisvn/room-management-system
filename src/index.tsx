@@ -1,12 +1,38 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import Dexie from 'dexie';
 import App from './App';
+import AuthenticationProvider from './authentication-provider';
 import reportWebVitals from './reportWebVitals';
+import './style';
+
+window.roomManagementSystemDB = new Dexie('room-management-system');
+window.roomManagementSystemDB
+  .version(1)
+  .stores({
+    account: 'id,username,password'
+  })
+  .stores({
+    room: 'id,code,name,stillEmpty,kindOfRoomId'
+  })
+  .stores({
+    kindOfRoom: 'id,code,name,price,deposit'
+  })
+  .stores({
+    agreement: 'id,code,roomId,customerIds,date'
+  })
+  .stores({
+    customer: 'id,code,fullName,identityCardNumber,dateOfBirth,sex,address,phoneNumber,job'
+  })
+  .stores({
+    unitPrice: 'id,code,water,electricity,parking,date'
+  });;
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <AuthenticationProvider>
+      <App />
+    </AuthenticationProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );
