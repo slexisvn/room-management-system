@@ -248,11 +248,11 @@ const AgreementPage: FC = () => {
           <Form.Item
             label='Thời hạn'
             name='date'
+            style={{ marginBottom: 0 }}
             rules={[{ required: true, message: 'Hãy chọn thời hạn!' }]}
           >
             <DatePicker.RangePicker
               style={{ width: '100%' }}
-              placeholder={['Chọn ngày', 'Chọn ngày']}
               format={['DD/MM/YYYY', 'DD/MM/YYYY']}
               ranges={{
                 '1 tháng': [moment(), moment().add(1, 'months')],

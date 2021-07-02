@@ -203,7 +203,7 @@ const CustomerPage: FC = () => {
           </Form.Item>
 
           <Form.Item label='Ngày sinh' name='dateOfBirth'>
-            <DatePicker style={{ width: '100%' }} placeholder='Chọn ngày' format='DD/MM/YYYY' />
+            <DatePicker style={{ width: '100%' }} format='DD/MM/YYYY' />
           </Form.Item>
 
           <Form.Item label='Giới tính' name='sex'>
@@ -222,7 +222,7 @@ const CustomerPage: FC = () => {
             <InputNumber style={{ width: '100%' }} />
           </Form.Item>
 
-          <Form.Item label='Nghề nghiệp' name='job'>
+          <Form.Item label='Nghề nghiệp' name='job' style={{ marginBottom: 0 }}>
             <Input />
           </Form.Item>
         </Form>

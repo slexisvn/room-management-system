@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Button, Modal, Form, InputNumber, Input, message, Tooltip, DatePicker } from 'antd';
+import { Button, Modal, Form, InputNumber, message, Tooltip, DatePicker } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import { AgGridReact } from 'ag-grid-react';
@@ -27,14 +27,26 @@ const UnitPricePage: FC = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleEdit = (data: any) => {
-    setEdit(data.id);
+  const handleEdit = ({ date, ...rest }: any) => {
+    setEdit(rest.id);
     setVisibleModal(true);
-    form.setFieldsValue(data);
+    form.setFieldsValue({
+      date: date && moment(date),
+      ...rest
+    });
   };
 
   const handleModalOk = () => {
-    form.validateFields().then(async value => {
+    form.validateFields().then(async ({ date, ...rest }) => {
+      const value = { date: date?.valueOf(), code: moment(date).format('MM/YYYY'), ...rest };
+
+      const data: any[] = await db.unitPrice.where('code').equals(value.code).toArray();
+
+      if (data.length > 0) {
+        message.error(`Đơn giá tháng ${data[0].code} đã tồn tại!`);
+        return;
+      }
+
       if (edit) {
         db.unitPrice.update(edit, value).then((updated: boolean) => {
           if (updated) {
@@ -50,23 +62,17 @@ const UnitPricePage: FC = () => {
         return;
       }
 
-      const data: any[] = await db.unitPrice.where('code').equals(value.code).toArray();
-
-      if (data.length > 0) {
-        message.error(`Đơn giá tháng ${value.date.format('MM/YYYY')} đã tồn tại!`);
-      } else {
-        db.unitPrice
-          .add({
-            id: uuidv4(),
-            ...value
-          })
-          .then(() => {
-            message.success('Tạo thành công!');
-            setVisibleModal(false);
-            form.resetFields();
-            fetchData();
-          });
-      }
+      db.unitPrice
+        .add({
+          id: uuidv4(),
+          ...value
+        })
+        .then(() => {
+          message.success('Tạo thành công!');
+          setVisibleModal(false);
+          form.resetFields();
+          fetchData();
+        });
     });
   };
 
@@ -78,7 +84,7 @@ const UnitPricePage: FC = () => {
 
   const handleDeleteData = (data: any) => {
     Modal.warning({
-      title: `Bạn có muốn xóa đơn giá tháng ${moment(data.date).format('MM/YYYY')}?`,
+      title: `Bạn có muốn xóa đơn giá tháng ${data.code}?`,
       onOk: () => {
         db.unitPrice
           .where('code')
@@ -107,7 +113,6 @@ const UnitPricePage: FC = () => {
             animateRows
             defaultColDef={{ floatingFilter: true, sortable: true, filter: true }}
             columnDefs={[
-              { headerName: 'Mã', field: 'code' },
               {
                 headerName: 'Đơn giá điện',
                 field: 'electricity',
@@ -132,26 +137,32 @@ const UnitPricePage: FC = () => {
                 pinned: 'right',
                 field: '',
                 width: 100,
-                cellRendererFramework: (params: any) => (
-                  <>
-                    <Tooltip title='Chỉnh sửa'>
-                      <Button
-                        onClick={() => handleEdit(params.data)}
-                        icon={<EditOutlined />}
-                        style={{ marginRight: 8 }}
-                        type='primary'
-                      />
-                    </Tooltip>
+                cellRendererFramework: (params: any) => {
+                  if (moment().isAfter(moment(params.data.date), 'months')) {
+                    return null;
+                  }
 
-                    <Tooltip title='Xóa'>
-                      <Button
-                        icon={<DeleteOutlined />}
-                        danger
-                        onClick={() => handleDeleteData(params.data)}
-                      />
-                    </Tooltip>
-                  </>
-                )
+                  return (
+                    <>
+                      <Tooltip title='Chỉnh sửa'>
+                        <Button
+                          onClick={() => handleEdit(params.data)}
+                          icon={<EditOutlined />}
+                          style={{ marginRight: 8 }}
+                          type='primary'
+                        />
+                      </Tooltip>
+
+                      <Tooltip title='Xóa'>
+                        <Button
+                          icon={<DeleteOutlined />}
+                          danger
+                          onClick={() => handleDeleteData(params.data)}
+                        />
+                      </Tooltip>
+                    </>
+                  );
+                }
               }
             ]}
             rowData={rowData}
@@ -169,10 +180,6 @@ const UnitPricePage: FC = () => {
         onCancel={handleModalCancel}
       >
         <Form name='add-form' form={form} labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
-          <Form.Item label='Mã' name='code' rules={[{ required: true, message: 'Hãy nhập mã!' }]}>
-            <Input autoFocus />
-          </Form.Item>
-
           <Form.Item
             label='Điện'
             name='electricity'
@@ -212,9 +219,10 @@ const UnitPricePage: FC = () => {
           <Form.Item
             label='Thời gian'
             name='date'
+            style={{ marginBottom: 0 }}
             rules={[{ required: true, message: 'Hãy chọn thời gian!' }]}
           >
-            <DatePicker picker='month' placeholder='Chọn tháng' format='MM/YYYY' />
+            <DatePicker style={{ width: '100%' }} picker='month' format='MM/YYYY' />
           </Form.Item>
         </Form>
       </Modal>

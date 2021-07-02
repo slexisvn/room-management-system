@@ -181,6 +181,7 @@ const RoomPage: FC = () => {
             label='Loại phòng'
             name='kindOfRoomId'
             rules={[{ required: true, message: 'Hãy chọn loại phòng!' }]}
+            style={{ marginBottom: 0 }}
           >
             <Select optionLabelProp='label'>
               {foreignKey.kindOfRoom.map((type: any) => (

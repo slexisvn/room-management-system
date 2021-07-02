@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Dexie from 'dexie';
+import { ConfigProvider } from 'antd';
+import viVN from 'antd/lib/locale/vi_VN';
+import 'moment/locale/vi';
 import App from './App';
 import AuthenticationProvider from './authentication-provider';
 import reportWebVitals from './reportWebVitals';
@@ -26,13 +29,15 @@ window.roomManagementSystemDB
   })
   .stores({
     unitPrice: 'id,code,water,electricity,parking,date'
-  });;
+  });
 
 ReactDOM.render(
   <React.StrictMode>
-    <AuthenticationProvider>
-      <App />
-    </AuthenticationProvider>
+    <ConfigProvider locale={viVN}>
+      <AuthenticationProvider>
+        <App />
+      </AuthenticationProvider>
+    </ConfigProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

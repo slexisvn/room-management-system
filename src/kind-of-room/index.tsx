@@ -192,6 +192,7 @@ const KindOfRoomPage: FC = () => {
             label='Tiền cọc'
             name='deposit'
             rules={[{ required: true, message: 'Hãy nhập tiền cọc!' }]}
+            style={{ marginBottom: 0 }}
           >
             <InputNumber
               style={{ width: '100%' }}
