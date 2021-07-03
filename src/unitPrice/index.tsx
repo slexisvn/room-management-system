@@ -42,7 +42,7 @@ const UnitPricePage: FC = () => {
 
       const data: any[] = await db.unitPrice.where('code').equals(value.code).toArray();
 
-      if (data.length > 0) {
+      if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
         message.error(`Đơn giá tháng ${data[0].code} đã tồn tại!`);
         return;
       }
@@ -129,6 +129,11 @@ const UnitPricePage: FC = () => {
                 valueFormatter: params => formatter.format(params.value)
               },
               {
+                headerName: 'Tiền rác',
+                field: 'junkMoney',
+                valueFormatter: params => formatter.format(params.value)
+              },
+              {
                 headerName: 'Thời gian',
                 field: 'date',
                 valueFormatter: params => params.value && moment(params.value).format('MM/YYYY')
@@ -137,6 +142,7 @@ const UnitPricePage: FC = () => {
                 pinned: 'right',
                 field: '',
                 width: 100,
+                floatingFilter: false,
                 cellRendererFramework: (params: any) => {
                   if (moment().isAfter(moment(params.data.date), 'months')) {
                     return null;
@@ -208,6 +214,18 @@ const UnitPricePage: FC = () => {
             label='Tiền giữ xe'
             name='parking'
             rules={[{ required: true, message: 'Hãy nhập tiền xe!' }]}
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={value => value!.replace(/\s?VNĐ|(,*)/g, '')}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label='Tiền rác'
+            name='junkMoney'
+            rules={[{ required: true, message: 'Hãy nhập tiền rác!' }]}
           >
             <InputNumber
               style={{ width: '100%' }}

@@ -14,9 +14,8 @@ const KindOfRoomPage: FC = () => {
   const db: any = window.roomManagementSystemDB;
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'VND',
+    currency: 'VND'
   });
-
 
   const fetchData = async () => {
     setRowData(await db.kindOfRoom.toArray());
@@ -35,6 +34,12 @@ const KindOfRoomPage: FC = () => {
 
   const handleModalOk = () => {
     form.validateFields().then(async value => {
+      const data: any[] = await db.kindOfRoom.where('code').equals(value.code).toArray();
+
+      if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
+        message.error(`Loại phòng ${value.name} đã tồn tại!`);
+      }
+
       if (edit) {
         db.kindOfRoom.update(edit, value).then((updated: boolean) => {
           if (updated) {
@@ -50,23 +55,17 @@ const KindOfRoomPage: FC = () => {
         return;
       }
 
-      const data: any[] = await db.kindOfRoom.where('code').equals(value.code).toArray();
-
-      if (data.length > 0) {
-        message.error(`Loại phòng ${value.name} đã tồn tại!`);
-      } else {
-        db.kindOfRoom
-          .add({
-            id: uuidv4(),
-            ...value
-          })
-          .then(() => {
-            message.success('Tạo thành công!');
-            setVisibleModal(false);
-            form.resetFields();
-            fetchData();
-          });
-      }
+      db.kindOfRoom
+        .add({
+          id: uuidv4(),
+          ...value
+        })
+        .then(() => {
+          message.success('Tạo thành công!');
+          setVisibleModal(false);
+          form.resetFields();
+          fetchData();
+        });
     });
   };
 
@@ -126,6 +125,7 @@ const KindOfRoomPage: FC = () => {
                 pinned: 'right',
                 field: '',
                 width: 100,
+                floatingFilter: false,
                 cellRendererFramework: (params: any) => (
                   <>
                     <Tooltip title='Chỉnh sửa'>
@@ -162,12 +162,7 @@ const KindOfRoomPage: FC = () => {
         onOk={handleModalOk}
         onCancel={handleModalCancel}
       >
-        <Form
-          name='add-form'
-          form={form}
-          labelCol={{ span: 6 }}
-          wrapperCol={{ span: 18 }}
-        >
+        <Form name='add-form' form={form} labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
           <Form.Item label='Mã' name='code' rules={[{ required: true, message: 'Hãy nhập mã!' }]}>
             <Input autoFocus />
           </Form.Item>

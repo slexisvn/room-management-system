@@ -41,6 +41,12 @@ const RoomPage: FC = () => {
 
   const handleModalOk = () => {
     form.validateFields().then(async value => {
+      const data: any[] = await db.room.where('code').equals(value.code).toArray();
+
+      if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
+        message.error(`Phòng ${value.name} đã tồn tại!`);
+      }
+
       if (edit) {
         db.room.update(edit, value).then((updated: boolean) => {
           if (updated) {
@@ -56,23 +62,17 @@ const RoomPage: FC = () => {
         return;
       }
 
-      const data: any[] = await db.room.where('code').equals(value.code).toArray();
-
-      if (data.length > 0) {
-        message.error(`Phòng ${value.name} đã tồn tại!`);
-      } else {
-        db.room
-          .add({
-            id: uuidv4(),
-            ...value
-          })
-          .then(() => {
-            message.success('Tạo thành công!');
-            setVisibleModal(false);
-            form.resetFields();
-            fetchRoomData();
-          });
-      }
+      db.room
+        .add({
+          id: uuidv4(),
+          ...value
+        })
+        .then(() => {
+          message.success('Tạo thành công!');
+          setVisibleModal(false);
+          form.resetFields();
+          fetchRoomData();
+        });
     });
   };
 
@@ -128,6 +128,7 @@ const RoomPage: FC = () => {
                 pinned: 'right',
                 field: '',
                 width: 100,
+                floatingFilter: false,
                 cellRendererFramework: (params: any) => (
                   <>
                     <Tooltip title='Chỉnh sửa'>

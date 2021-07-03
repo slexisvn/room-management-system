@@ -139,6 +139,7 @@ const CustomerPage: FC = () => {
                 pinned: 'right',
                 field: '',
                 width: 100,
+                floatingFilter: false,
                 cellRendererFramework: (params: any) => (
                   <>
                     <Tooltip title='Chỉnh sửa'>

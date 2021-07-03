@@ -4,7 +4,8 @@ import {
   BranchesOutlined,
   SmileOutlined,
   PaperClipOutlined,
-  DollarOutlined
+  DollarOutlined,
+  FileOutlined
 } from '@ant-design/icons';
 
 export const routes = {
@@ -46,6 +47,12 @@ export const routes = {
         name: 'Quản lý đơn giá',
         icon: <DollarOutlined />,
         component: './UnitPrice'
+      },
+      {
+        path: '/bill',
+        name: 'Quản lý hóa đơn',
+        icon: <FileOutlined />,
+        component: './Bill'
       }
     ]
   },

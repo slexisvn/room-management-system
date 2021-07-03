@@ -51,6 +51,12 @@ const AgreementPage: FC = () => {
     form.validateFields().then(async ({ date, ...rest }) => {
       const value = { date: [date[0].valueOf(), date[1].valueOf()], ...rest };
 
+      const data: any[] = await db.agreement.where('code').equals(value.code).toArray();
+
+      if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
+        message.error(`Hợp đồng ${value.code} đã tồn tại!`);
+      }
+
       const usedCustomers = rowData
         .filter((agreement: any) => (edit ? edit !== agreement.id : agreement.id))
         .filter(
@@ -89,24 +95,18 @@ const AgreementPage: FC = () => {
         return;
       }
 
-      const data: any[] = await db.agreement.where('code').equals(value.code).toArray();
-
-      if (data.length > 0) {
-        message.error(`Hợp đồng ${value.code} đã tồn tại!`);
-      } else {
-        db.agreement
-          .add({
-            id: uuidv4(),
-            ...value
-          })
-          .then(async () => {
-            message.success('Tạo thành công!');
-            setVisibleModal(false);
-            form.resetFields();
-            await db.room.update(value.roomId, { stillEmpty: true });
-            fetchData();
-          });
-      }
+      db.agreement
+        .add({
+          id: uuidv4(),
+          ...value
+        })
+        .then(async () => {
+          message.success('Tạo thành công!');
+          setVisibleModal(false);
+          form.resetFields();
+          await db.room.update(value.roomId, { stillEmpty: true });
+          fetchData();
+        });
     });
   };
 
@@ -165,6 +165,7 @@ const AgreementPage: FC = () => {
                 pinned: 'right',
                 field: '',
                 width: 100,
+                floatingFilter: false,
                 cellRendererFramework: (params: any) => (
                   <>
                     <Tooltip title='Chỉnh sửa'>
