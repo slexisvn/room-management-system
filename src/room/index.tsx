@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { Dispatch, FC, SetStateAction, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Button, Modal, Form, Input, message, Tooltip, Select } from 'antd';
@@ -11,7 +11,12 @@ interface IForeignKey {
   kindOfRoom: IKindOfRoom[];
 }
 
-const RoomPage: FC = () => {
+export interface RoomPageProps {
+  changeTourStep: Dispatch<SetStateAction<number>>;
+  changeTourOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+const RoomPage: FC<RoomPageProps> = ({ changeTourStep, changeTourOpen }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const [rowData, setRowData] = useState<IRoom[]>([]);
   const [edit, setEdit] = useState('');
@@ -35,6 +40,14 @@ const RoomPage: FC = () => {
   useEffect(() => {
     fetchRoomData();
     fetchForeignKeyData();
+
+    setTimeout(() => {
+      changeTourStep(7);
+
+      setTimeout(() => {
+        changeTourOpen(false);
+      }, 1500);
+    }, 4000);
     // eslint-disable-next-line
   }, []);
 
@@ -80,6 +93,11 @@ const RoomPage: FC = () => {
           fetchRoomData();
         });
     });
+
+    setTimeout(() => {
+      changeTourOpen(true);
+      changeTourStep(8);
+    }, 300);
   };
 
   const handleModalCancel = () => {
@@ -111,7 +129,15 @@ const RoomPage: FC = () => {
     <>
       <PageContainer
         extra={[
-          <Button type='primary' onClick={() => setVisibleModal(true)}>
+          <Button
+            type='primary'
+            onClick={() => {
+              setVisibleModal(true);
+              setTimeout(() => {
+                changeTourStep(6);
+              }, 300);
+            }}
+          >
             Thêm mới
           </Button>
         ]}
