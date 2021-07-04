@@ -2,6 +2,7 @@
   "name": "room-management-system",
   "version": "0.1.0",
   "private": true,
+  "homepage": "http://slexisvn.github.io/room-management-system",
   "dependencies": {
     "@ant-design/charts": "^1.1.20",
     "@ant-design/pro-card": "^1.14.3",
@@ -68,6 +69,7 @@
     "@types/reactour": "^1.18.1",
     "@types/uuid": "^8.3.0",
     "craco-antd": "^1.19.0",
+    "gh-pages": "^3.2.3",
     "husky": "^7.0.0",
     "prettier": "^2.3.2",
     "pretty-quick": "^3.1.1"
