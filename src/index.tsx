@@ -13,29 +13,16 @@ import './style';
 LicenseManager.setLicenseKey('NDEwMjMzMzIwMDAwMA==4776ae9eddc069aad222a64b09b9e834');
 
 window.roomManagementSystemDB = new Dexie('room-management-system');
-window.roomManagementSystemDB
-  .version(1)
-  .stores({
-    account: 'id,username,password'
-  })
-  .stores({
-    room: 'id,code,name,stillEmpty,kindOfRoomId'
-  })
-  .stores({
-    kindOfRoom: 'id,code,name,price,deposit'
-  })
-  .stores({
-    agreement: 'id,code,roomId,customerIds,date'
-  })
-  .stores({
-    customer: 'id,code,fullName,identityCardNumber,dateOfBirth,sex,address,phoneNumber,job'
-  })
-  .stores({
-    unitPrice: 'id,code,water,electricity,parking,junkMoney,date'
-  })
-  .stores({
-    bill: 'id,code,amountOfWater,amountOfElectricity,numberOfVehicles,date,formatDate,roomId'
-  });
+window.roomManagementSystemDB!.version(1).stores({
+  account: 'id,username,password',
+  room: 'id,code,name,stillEmpty,kindOfRoomId',
+  kindOfRoom: 'id,code,name,price,deposit',
+  agreement: 'id,code,roomId,customerIds,date',
+  customer: 'id,code,fullName,identityCardNumber,dateOfBirth,sex,address,phoneNumber,job',
+  unitPrice: 'id,code,water,electricity,parking,junkMoney,date',
+  bill: 'id,code,amountOfWater,amountOfElectricity,numberOfVehicles,date,formatDate,roomId',
+  equipment: 'id,code,name,number'
+});
 
 ReactDOM.render(
   <React.StrictMode>

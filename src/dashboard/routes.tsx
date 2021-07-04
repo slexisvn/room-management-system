@@ -5,7 +5,8 @@ import {
   SmileOutlined,
   PaperClipOutlined,
   DollarOutlined,
-  FileOutlined
+  FileOutlined,
+  ScissorOutlined
 } from '@ant-design/icons';
 
 export const routes = {
@@ -53,6 +54,12 @@ export const routes = {
         name: 'Quản lý hóa đơn',
         icon: <FileOutlined />,
         component: './Bill'
+      },
+      {
+        path: '/equipment',
+        name: 'Quản lý trang thiết bị',
+        icon: <ScissorOutlined />,
+        component: './Equipment'
       }
     ]
   },

@@ -5,23 +5,28 @@ import { Button, Modal, Form, Input, message, Tooltip, Select } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import { AgGridReact } from 'ag-grid-react';
+import { ValueFormatterParams } from 'ag-grid-community';
+
+interface IForeignKey {
+  kindOfRoom: IKindOfRoom[];
+}
 
 const RoomPage: FC = () => {
   const [visibleModal, setVisibleModal] = useState(false);
-  const [rowData, setRowData] = useState<any[]>([]);
+  const [rowData, setRowData] = useState<IRoom[]>([]);
   const [edit, setEdit] = useState('');
-  const [foreignKey, setForeignKey] = useState<any>({
+  const [foreignKey, setForeignKey] = useState<IForeignKey>({
     kindOfRoom: []
   });
-  const [form] = Form.useForm();
-  const db: any = window.roomManagementSystemDB;
+  const [form] = Form.useForm<Omit<IRoom, 'id'>>();
+  const db = window.roomManagementSystemDB;
 
   const fetchRoomData = async () => {
-    setRowData(await db.room.toArray());
+    setRowData(await db!.room!.toArray());
   };
 
   const fetchForeignKeyData = async () => {
-    const kindOfRoom = await db.kindOfRoom.toArray();
+    const kindOfRoom = await db!.kindOfRoom!.toArray();
     setForeignKey({
       kindOfRoom
     });
@@ -33,7 +38,7 @@ const RoomPage: FC = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleEdit = (data: any) => {
+  const handleEdit = (data: IRoom) => {
     setEdit(data.id);
     setVisibleModal(true);
     form.setFieldsValue(data);
@@ -41,14 +46,15 @@ const RoomPage: FC = () => {
 
   const handleModalOk = () => {
     form.validateFields().then(async value => {
-      const data: any[] = await db.room.where('code').equals(value.code).toArray();
+      const data = await db!.room!.where('code').equals(value.code).toArray();
 
       if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
         message.error(`Phòng ${value.name} đã tồn tại!`);
+        return;
       }
 
       if (edit) {
-        db.room.update(edit, value).then((updated: boolean) => {
+        db!.room!.update(edit, value).then(updated => {
           if (updated) {
             message.success('Cập nhật thành công!');
             setVisibleModal(false);
@@ -62,8 +68,8 @@ const RoomPage: FC = () => {
         return;
       }
 
-      db.room
-        .add({
+      db!
+        .room!.add({
           id: uuidv4(),
           ...value
         })
@@ -82,12 +88,12 @@ const RoomPage: FC = () => {
     form.resetFields();
   };
 
-  const handleDeleteData = (data: any) => {
+  const handleDeleteData = (data: IRoom) => {
     Modal.warning({
       title: `Bạn có muốn xóa phòng ${data.name}?`,
       onOk: () => {
-        db.room
-          .where('code')
+        db!
+          .room!.where('code')
           .equals(data.code)
           .delete()
           .then(() => {
@@ -97,6 +103,9 @@ const RoomPage: FC = () => {
       }
     });
   };
+
+  const stillEmptyValueFormatter = (params: ValueFormatterParams) =>
+    !params.value ? 'Có' : 'Không';
 
   return (
     <>
@@ -113,16 +122,20 @@ const RoomPage: FC = () => {
             animateRows
             defaultColDef={{ floatingFilter: true, sortable: true, filter: true }}
             columnDefs={[
-              { headerName: 'Mã', field: 'code' },
-              { headerName: 'Tên', field: 'name' },
+              { headerName: 'Mã', field: 'code', filter: 'agTextColumnFilter' },
+              { headerName: 'Tên', field: 'name', filter: 'agTextColumnFilter' },
               {
                 headerName: 'Loại',
-                field: 'kindOfRoom'
+                field: 'kindOfRoom',
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Còn trống',
                 field: 'stillEmpty',
-                valueFormatter: params => (!params.value ? 'Có' : 'Không')
+                filterParams: {
+                  valueFormatter: stillEmptyValueFormatter
+                },
+                valueFormatter: stillEmptyValueFormatter
               },
               {
                 pinned: 'right',
@@ -152,11 +165,9 @@ const RoomPage: FC = () => {
               }
             ]}
             rowData={rowData.map(data => ({
-              kindOfRoom: foreignKey.kindOfRoom.find((type: any) => type.id === data.kindOfRoomId)
-                ?.name,
+              kindOfRoom: foreignKey.kindOfRoom!.find(type => type.id === data.kindOfRoomId)?.name,
               ...data
             }))}
-            onGridReady={e => e.api.sizeColumnsToFit()}
           />
         </ProCard>
       </PageContainer>
@@ -185,7 +196,7 @@ const RoomPage: FC = () => {
             style={{ marginBottom: 0 }}
           >
             <Select optionLabelProp='label'>
-              {foreignKey.kindOfRoom.map((type: any) => (
+              {foreignKey.kindOfRoom!.map(type => (
                 <Select.Option value={type.id} key={type.id} label={type.name}>
                   {type.name} ({type.price})
                 </Select.Option>

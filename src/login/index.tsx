@@ -14,22 +14,21 @@ import './style';
 interface LoginPageProps extends RouteComponentProps<{}, StaticContext, unknown> {}
 
 const LoginPage: FC<LoginPageProps> = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<Omit<IAccount, 'id'> & { remember: boolean }>();
   const [registration, setRegistration] = useState(false);
   const { setAuthenticate } = useContext(AuthenticationContext);
+  const db = window.roomManagementSystemDB;
 
   const handleLogin = () => {
-    const db: any = window.roomManagementSystemDB;
-
     form.validateFields().then(async ({ username, password, remember }) => {
-      const data: any[] = await db.account.where('username').equals(username).toArray();
+      const data = await db!.account!.where('username').equals(username).toArray();
 
       if (registration) {
         if (data.length > 0) {
           message.error('Tài khoản đã tồn tại!');
         } else {
-          db.account
-            .add({
+          db!
+            .account!.add({
               id: uuidv4(),
               username,
               password: hashSync(password, getPasswordHashSalt())

@@ -4,22 +4,23 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Button, Modal, Form, InputNumber, message, Tooltip, DatePicker } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
+import { ValueFormatterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import moment from 'moment';
 
 const UnitPricePage: FC = () => {
   const [visibleModal, setVisibleModal] = useState(false);
-  const [rowData, setRowData] = useState<any[]>([]);
+  const [rowData, setRowData] = useState<IUnitPrice[]>([]);
   const [edit, setEdit] = useState('');
-  const [form] = Form.useForm();
-  const db: any = window.roomManagementSystemDB;
+  const [form] = Form.useForm<Omit<IUnitPrice, 'id' | 'code' | 'date'> & { date: moment.Moment }>();
+  const db = window.roomManagementSystemDB;
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'VND'
   });
 
   const fetchData = async () => {
-    setRowData(await db.unitPrice.toArray());
+    setRowData(await db!.unitPrice!.toArray());
   };
 
   useEffect(() => {
@@ -27,11 +28,11 @@ const UnitPricePage: FC = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleEdit = ({ date, ...rest }: any) => {
+  const handleEdit = ({ date, ...rest }: Omit<IRoom, 'date'> & { date: moment.Moment }) => {
     setEdit(rest.id);
     setVisibleModal(true);
     form.setFieldsValue({
-      date: date && moment(date),
+      date: moment(date),
       ...rest
     });
   };
@@ -40,7 +41,7 @@ const UnitPricePage: FC = () => {
     form.validateFields().then(async ({ date, ...rest }) => {
       const value = { date: date?.valueOf(), code: moment(date).format('MM/YYYY'), ...rest };
 
-      const data: any[] = await db.unitPrice.where('code').equals(value.code).toArray();
+      const data = await db!.unitPrice!.where('code').equals(value.code).toArray();
 
       if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
         message.error(`Đơn giá tháng ${data[0].code} đã tồn tại!`);
@@ -48,7 +49,7 @@ const UnitPricePage: FC = () => {
       }
 
       if (edit) {
-        db.unitPrice.update(edit, value).then((updated: boolean) => {
+        db!.unitPrice!.update(edit, value).then(updated => {
           if (updated) {
             message.success('Cập nhật thành công!');
             setVisibleModal(false);
@@ -62,8 +63,8 @@ const UnitPricePage: FC = () => {
         return;
       }
 
-      db.unitPrice
-        .add({
+      db!
+        .unitPrice!.add({
           id: uuidv4(),
           ...value
         })
@@ -82,12 +83,12 @@ const UnitPricePage: FC = () => {
     form.resetFields();
   };
 
-  const handleDeleteData = (data: any) => {
+  const handleDeleteData = (data: IUnitPrice) => {
     Modal.warning({
       title: `Bạn có muốn xóa đơn giá tháng ${data.code}?`,
       onOk: () => {
-        db.unitPrice
-          .where('code')
+        db!
+          .unitPrice!.where('code')
           .equals(data.code)
           .delete()
           .then(() => {
@@ -97,6 +98,9 @@ const UnitPricePage: FC = () => {
       }
     });
   };
+
+  const dateValueFormatter = (params: ValueFormatterParams) =>
+    params.value && moment(+params.value).format('MM/YYYY');
 
   return (
     <>
@@ -116,27 +120,34 @@ const UnitPricePage: FC = () => {
               {
                 headerName: 'Đơn giá điện',
                 field: 'electricity',
+                filter: 'agTextColumnFilter',
                 valueFormatter: params => formatter.format(params.value)
               },
               {
                 headerName: 'Đơn giá nước',
                 field: 'water',
+                filter: 'agTextColumnFilter',
                 valueFormatter: params => formatter.format(params.value)
               },
               {
                 headerName: 'Tiền giữ xe',
                 field: 'parking',
+                filter: 'agTextColumnFilter',
                 valueFormatter: params => formatter.format(params.value)
               },
               {
                 headerName: 'Tiền rác',
                 field: 'junkMoney',
+                filter: 'agTextColumnFilter',
                 valueFormatter: params => formatter.format(params.value)
               },
               {
                 headerName: 'Thời gian',
                 field: 'date',
-                valueFormatter: params => params.value && moment(params.value).format('MM/YYYY')
+                filterParams: {
+                  valueFormatter: dateValueFormatter
+                },
+                valueFormatter: dateValueFormatter
               },
               {
                 pinned: 'right',
@@ -172,7 +183,6 @@ const UnitPricePage: FC = () => {
               }
             ]}
             rowData={rowData}
-            onGridReady={e => e.api.sizeColumnsToFit()}
           />
         </ProCard>
       </PageContainer>

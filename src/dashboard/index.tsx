@@ -12,7 +12,8 @@ import KindOfRoomPage from '../kind-of-room';
 import CustomerPage from '../customer';
 import AgreementPage from '../agreement';
 import UnitPricePage from '../unitPrice';
-import BillPage from '../bill'
+import BillPage from '../bill';
+import EquipmentPage from '../equipment';
 
 const Dashboard: FC = () => {
   const [pathname, setPathname] = useState('/analysis');
@@ -67,6 +68,7 @@ const Dashboard: FC = () => {
           <Route render={() => <KindOfRoomPage />} key='kind-of-room' path='/kind-of-room' />
           <Route render={() => <UnitPricePage />} key='unit-price' path='/unit-price' />
           <Route render={() => <BillPage />} key='bill' path='/bill' />
+          <Route render={() => <EquipmentPage />} key='equipment' path='/equipment' />
         </Switch>
       </ProLayout>
     </BrowserRouter>

@@ -17,28 +17,35 @@ import ProCard from '@ant-design/pro-card';
 import { AgGridReact } from 'ag-grid-react';
 import moment from 'moment';
 
+interface IForeignKey {
+  room: IRoom[];
+  unitPrice: IUnitPrice[];
+}
+
 const BillPage: FC = () => {
   const [visibleModal, setVisibleModal] = useState(false);
-  const [rowData, setRowData] = useState<any[]>([]);
+  const [rowData, setRowData] = useState<IBill[]>([]);
   const [edit, setEdit] = useState('');
-  const [form] = Form.useForm();
-  const [foreignKey, setForeignKey] = useState<any>({
+  const [form] = Form.useForm<
+    Omit<IBill, 'formatDate' | 'id' | 'date'> & { date: moment.Moment }
+  >();
+  const [foreignKey, setForeignKey] = useState<IForeignKey>({
     room: [],
     unitPrice: []
   });
-  const db: any = window.roomManagementSystemDB;
+  const db = window.roomManagementSystemDB;
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'VND'
   });
 
   const fetchData = async () => {
-    setRowData(await db.bill.toArray());
+    setRowData(await db!.bill!!.toArray());
   };
 
   const fetchForeignKeyData = async () => {
-    const room = await db.room.toArray();
-    const unitPrice = await db.unitPrice.toArray();
+    const room = await db!.room!.toArray();
+    const unitPrice = await db!.unitPrice!.toArray();
     setForeignKey({
       room,
       unitPrice
@@ -51,7 +58,7 @@ const BillPage: FC = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleEdit = ({ date, ...rest }: any) => {
+  const handleEdit = ({ date, ...rest }: IBill) => {
     setEdit(rest.id);
     setVisibleModal(true);
     form.setFieldsValue({
@@ -63,32 +70,38 @@ const BillPage: FC = () => {
   const handleModalOk = () => {
     form.validateFields().then(async ({ date, ...rest }) => {
       const value = { date: date.valueOf(), ...rest };
-      const data: any[] = await db.bill.where('code').equals(value.code).toArray();
+      const data = await db!.bill!.where('code').equals(value.code).toArray();
 
       if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
         message.error(`Hóa đơn ${value.code} đã tồn tại!`);
         return;
       }
 
-      if (edit) {
-        db.bill
-          .update(edit, { ...value, formatDate: moment(value.date).format('MM/YYYY') })
-          .then((updated: boolean) => {
-            if (updated) {
-              message.success('Cập nhật thành công!');
-              setVisibleModal(false);
-              setEdit('');
-              form.resetFields();
-              fetchData();
-            } else {
-              message.error('Cập nhật thất bại!');
-            }
-          });
+      const formatDate = moment(value.date).format('MM/YYYY');
+      const usedRoom = await db!.bill!.where({ roomId: value.roomId, formatDate }).toArray();
+
+      if (usedRoom.length) {
+        message.error('Có phòng đã được lập hóa đơn!');
         return;
       }
 
-      db.bill
-        .add({
+      if (edit) {
+        db!.bill!.update(edit, { ...value }).then(updated => {
+          if (updated) {
+            message.success('Cập nhật thành công!');
+            setVisibleModal(false);
+            setEdit('');
+            form.resetFields();
+            fetchData();
+          } else {
+            message.error('Cập nhật thất bại!');
+          }
+        });
+        return;
+      }
+
+      db!
+        .bill!.add({
           id: uuidv4(),
           formatDate: moment(value.date).format('MM/YYYY'),
           ...value
@@ -108,12 +121,12 @@ const BillPage: FC = () => {
     form.resetFields();
   };
 
-  const handleDeleteData = (data: any) => {
+  const handleDeleteData = (data: IBill) => {
     Modal.warning({
       title: `Bạn có muốn xóa hóa đơn ${data.code}?`,
       onOk: () => {
-        db.bill
-          .where('code')
+        db!
+          .bill!.where('code')
           .equals(data.code)
           .delete()
           .then(() => {
@@ -142,33 +155,51 @@ const BillPage: FC = () => {
             enableRangeSelection
             columnDefs={[
               { headerName: 'Thời gian', field: 'formatDate', rowGroup: true, hide: true },
-              { headerName: 'Mã', field: 'code' },
+              { headerName: 'Mã', field: 'code', filter: 'agTextColumnFilter' },
               {
                 headerName: 'Phòng',
-                field: 'room'
+                field: 'room',
+                filter: 'agTextColumnFilter'
               },
-              { headerName: 'Số lượng điện tiêu thụ', field: 'amountOfElectricity' },
-              { headerName: 'Số lượng nước tiêu thụ', field: 'amountOfWater' },
-              { headerName: 'Số lượng xe', field: 'numberOfVehicles' },
+              {
+                headerName: 'Số lượng điện tiêu thụ',
+                field: 'amountOfElectricity',
+                filter: 'agTextColumnFilter'
+              },
+              {
+                headerName: 'Số lượng nước tiêu thụ',
+                field: 'amountOfWater',
+                filter: 'agTextColumnFilter'
+              },
+              {
+                headerName: 'Số lượng xe',
+                field: 'numberOfVehicles',
+                filter: 'agTextColumnFilter'
+              },
               {
                 headerName: 'Tiền điện',
-                field: 'electricityBill'
+                field: 'electricityBill',
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Tiền nước',
-                field: 'waterBill'
+                field: 'waterBill',
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Tiền giữ xe',
-                field: 'parkingFee'
+                field: 'parkingFee',
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Tiền rác',
-                field: 'junkMoney'
+                field: 'junkMoney',
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Tổng',
-                field: 'total'
+                field: 'total',
+                filter: 'agTextColumnFilter'
               },
               {
                 pinned: 'right',
@@ -204,16 +235,14 @@ const BillPage: FC = () => {
               }
             ]}
             rowData={rowData.map(data => {
-              const unitPrice = foreignKey.unitPrice.find(
-                (price: any) => price.code === data.formatDate
-              );
+              const unitPrice = foreignKey.unitPrice.find(price => price.code === data.formatDate);
               const electricityBill = unitPrice
                 ? unitPrice.electricity * data.amountOfElectricity
                 : 0;
               const waterBill = unitPrice ? unitPrice.water * data.amountOfWater : 0;
               const parkingFee = unitPrice ? unitPrice.parking * data.numberOfVehicles : 0;
               const junkMoney = unitPrice?.junkMoney || 0;
-              const room = foreignKey.room.find((type: any) => type.id === data.roomId)?.name;
+              const room = foreignKey.room.find(room => room.id === data.roomId)?.name;
               const total = electricityBill + waterBill + parkingFee + junkMoney;
 
               return {
@@ -226,7 +255,6 @@ const BillPage: FC = () => {
                 ...data
               };
             })}
-            onGridReady={e => e.api.sizeColumnsToFit()}
           />
         </ProCard>
       </PageContainer>
@@ -250,7 +278,7 @@ const BillPage: FC = () => {
             rules={[{ required: true, message: 'Hãy chọn phòng!' }]}
           >
             <Select>
-              {foreignKey.room.map((room: any) => (
+              {foreignKey.room.map(room => (
                 <Select.Option value={room.id} key={room.id}>
                   {room.name}
                 </Select.Option>

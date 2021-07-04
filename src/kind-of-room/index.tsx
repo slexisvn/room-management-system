@@ -8,17 +8,17 @@ import { AgGridReact } from 'ag-grid-react';
 
 const KindOfRoomPage: FC = () => {
   const [visibleModal, setVisibleModal] = useState(false);
-  const [rowData, setRowData] = useState<any[]>([]);
+  const [rowData, setRowData] = useState<IKindOfRoom[]>([]);
   const [edit, setEdit] = useState('');
-  const [form] = Form.useForm();
-  const db: any = window.roomManagementSystemDB;
+  const [form] = Form.useForm<Omit<IKindOfRoom, 'id'>>();
+  const db = window.roomManagementSystemDB;
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'VND'
   });
 
   const fetchData = async () => {
-    setRowData(await db.kindOfRoom.toArray());
+    setRowData(await db!.kindOfRoom!.toArray());
   };
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const KindOfRoomPage: FC = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleEdit = (data: any) => {
+  const handleEdit = (data: IKindOfRoom) => {
     setEdit(data.id);
     setVisibleModal(true);
     form.setFieldsValue(data);
@@ -34,14 +34,15 @@ const KindOfRoomPage: FC = () => {
 
   const handleModalOk = () => {
     form.validateFields().then(async value => {
-      const data: any[] = await db.kindOfRoom.where('code').equals(value.code).toArray();
+      const data = await db!.kindOfRoom!.where('code').equals(value.code).toArray();
 
       if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
         message.error(`Loại phòng ${value.name} đã tồn tại!`);
+        return;
       }
 
       if (edit) {
-        db.kindOfRoom.update(edit, value).then((updated: boolean) => {
+        db!.kindOfRoom!.update(edit, value).then(updated => {
           if (updated) {
             message.success('Cập nhật thành công!');
             setVisibleModal(false);
@@ -55,8 +56,8 @@ const KindOfRoomPage: FC = () => {
         return;
       }
 
-      db.kindOfRoom
-        .add({
+      db!
+        .kindOfRoom!.add({
           id: uuidv4(),
           ...value
         })
@@ -75,12 +76,12 @@ const KindOfRoomPage: FC = () => {
     form.resetFields();
   };
 
-  const handleDeleteData = (data: any) => {
+  const handleDeleteData = (data: IKindOfRoom) => {
     Modal.warning({
       title: `Bạn có muốn xóa loại phòng ${data.name}?`,
       onOk: () => {
-        db.kindOfRoom
-          .where('code')
+        db!
+          .kindOfRoom!.where('code')
           .equals(data.code)
           .delete()
           .then(() => {
@@ -106,20 +107,23 @@ const KindOfRoomPage: FC = () => {
             animateRows
             defaultColDef={{ floatingFilter: true, sortable: true, filter: true }}
             columnDefs={[
-              { headerName: 'Mã', field: 'code' },
+              { headerName: 'Mã', field: 'code', filter: 'agTextColumnFilter' },
               {
                 headerName: 'Tên',
-                field: 'name'
+                field: 'name',
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Giá',
                 field: 'price',
-                valueFormatter: params => formatter.format(params.value)
+                valueFormatter: params => formatter.format(params.value),
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Tiền cọc',
                 field: 'deposit',
-                valueFormatter: params => formatter.format(params.value)
+                valueFormatter: params => formatter.format(params.value),
+                filter: 'agTextColumnFilter'
               },
               {
                 pinned: 'right',
@@ -149,7 +153,6 @@ const KindOfRoomPage: FC = () => {
               }
             ]}
             rowData={rowData}
-            onGridReady={e => e.api.sizeColumnsToFit()}
           />
         </ProCard>
       </PageContainer>

@@ -7,24 +7,29 @@ import ProCard from '@ant-design/pro-card';
 import { AgGridReact } from 'ag-grid-react';
 import moment from 'moment';
 
+interface IForeignKey {
+  room: IRoom[];
+  customer: ICustomer[];
+}
+
 const AgreementPage: FC = () => {
   const [visibleModal, setVisibleModal] = useState(false);
-  const [rowData, setRowData] = useState<any[]>([]);
+  const [rowData, setRowData] = useState<IAgreement[]>([]);
   const [edit, setEdit] = useState('');
-  const [form] = Form.useForm();
-  const [foreignKey, setForeignKey] = useState<any>({
+  const [form] = Form.useForm<Omit<IAgreement, 'id'>>();
+  const [foreignKey, setForeignKey] = useState<IForeignKey>({
     room: [],
     customer: []
   });
-  const db: any = window.roomManagementSystemDB;
+  const db = window.roomManagementSystemDB;
 
   const fetchData = async () => {
-    setRowData(await db.agreement.toArray());
+    setRowData(await db!.agreement!.toArray());
   };
 
   const fetchForeignKeyData = async () => {
-    const room = await db.room.toArray();
-    const customer = await db.customer.toArray();
+    const room = await db!.room!.toArray();
+    const customer = await db!.customer!.toArray();
     setForeignKey({
       room,
       customer
@@ -37,7 +42,7 @@ const AgreementPage: FC = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleEdit = ({ date, ...rest }: any) => {
+  const handleEdit = ({ date, ...rest }: Omit<IAgreement, 'date'> & { date: string }) => {
     const tempDate = JSON.parse(date);
     setEdit(rest.id);
     setVisibleModal(true);
@@ -51,24 +56,24 @@ const AgreementPage: FC = () => {
     form.validateFields().then(async ({ date, ...rest }) => {
       const value = { date: [date[0].valueOf(), date[1].valueOf()], ...rest };
 
-      const data: any[] = await db.agreement.where('code').equals(value.code).toArray();
+      const data = await db!.agreement!.where('code').equals(value.code).toArray();
 
       if (data.filter(({ id }) => (edit ? edit !== id : id)).length > 0) {
         message.error(`Hợp đồng ${value.code} đã tồn tại!`);
+        return;
       }
 
       const usedCustomers = rowData
-        .filter((agreement: any) => (edit ? edit !== agreement.id : agreement.id))
+        .filter(agreement => (edit ? edit !== agreement.id : agreement.id))
         .filter(
-          (agreement: any) =>
-            agreement.customerIds.filter((customerId: string) =>
-              value.customerIds.includes(customerId)
-            ).length > 0
+          agreement =>
+            agreement.customerIds.filter(customerId => value.customerIds.includes(customerId))
+              .length > 0
         );
 
       const usedRooms = rowData
-        .filter((agreement: any) => (edit ? edit !== agreement.id : agreement.id))
-        .filter((agreement: any) => agreement.roomId === value.roomId);
+        .filter(agreement => (edit ? edit !== agreement.id : agreement.id))
+        .filter(agreement => agreement.roomId === value.roomId);
 
       if (usedRooms.length > 0) {
         message.error(`Phòng đã được sử dụng!`);
@@ -81,7 +86,7 @@ const AgreementPage: FC = () => {
       }
 
       if (edit) {
-        db.agreement.update(edit, value).then((updated: boolean) => {
+        db!.agreement!.update(edit, value).then(updated => {
           if (updated) {
             message.success('Cập nhật thành công!');
             setVisibleModal(false);
@@ -95,8 +100,8 @@ const AgreementPage: FC = () => {
         return;
       }
 
-      db.agreement
-        .add({
+      db!
+        .agreement!.add({
           id: uuidv4(),
           ...value
         })
@@ -104,7 +109,7 @@ const AgreementPage: FC = () => {
           message.success('Tạo thành công!');
           setVisibleModal(false);
           form.resetFields();
-          await db.room.update(value.roomId, { stillEmpty: true });
+          await db!.room!.update(value.roomId, { stillEmpty: true });
           fetchData();
         });
     });
@@ -116,17 +121,17 @@ const AgreementPage: FC = () => {
     form.resetFields();
   };
 
-  const handleDeleteData = (data: any) => {
+  const handleDeleteData = (data: IAgreement) => {
     Modal.warning({
       title: `Bạn có muốn xóa hợp đồng ${data.code}?`,
       onOk: () => {
-        db.agreement
-          .where('code')
+        db!
+          .agreement!.where('code')
           .equals(data.code)
           .delete()
           .then(async () => {
             message.success(`Xóa thành công!`);
-            await db.room.update(data.roomId, { stillEmpty: false });
+            await db!.room!.update(data.roomId, { stillEmpty: false });
             fetchData();
           });
       }
@@ -146,20 +151,23 @@ const AgreementPage: FC = () => {
         <ProCard style={{ height: window.innerHeight - 168 }} className='ag-theme-alpine'>
           <AgGridReact
             animateRows
-            defaultColDef={{ floatingFilter: true, sortable: true, filter: true }}
+            defaultColDef={{ floatingFilter: true, sortable: true, filter: true, resizable: true }}
             columnDefs={[
-              { headerName: 'Mã', field: 'code' },
+              { headerName: 'Mã', field: 'code', filter: 'agTextColumnFilter' },
               {
                 headerName: 'Phòng',
-                field: 'room'
+                field: 'room',
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Khách hàng',
-                field: 'customer'
+                field: 'customer',
+                filter: 'agTextColumnFilter'
               },
               {
                 headerName: 'Thời hạn',
-                field: 'formatDate'
+                field: 'formatDate',
+                filter: 'agTextColumnFilter'
               },
               {
                 pinned: 'right',
@@ -189,18 +197,17 @@ const AgreementPage: FC = () => {
               }
             ]}
             rowData={rowData.map(({ date, ...rest }) => ({
-              room: foreignKey.room.find((type: any) => type.id === rest.roomId)?.name,
+              room: foreignKey.room!.find(room => room.id === rest.roomId)?.name,
               date: JSON.stringify(date),
-              formatDate: `từ ${moment(date[0]).format('DD/MM/YYYY')} đến ${moment(date[1]).format(
-                'DD/MM/YYYY'
+              formatDate: `từ ${moment(date[0]).format('MM/YYYY')} đến ${moment(date[1]).format(
+                'MM/YYYY'
               )}`,
               customer: foreignKey.customer
-                .filter((customer: any) => rest.customerIds.includes(customer.id))
-                .map((customer: any) => customer.fullName)
+                .filter(customer => rest.customerIds.includes(customer.id))
+                .map(customer => customer.fullName)
                 .join(', '),
               ...rest
             }))}
-            onGridReady={e => e.api.sizeColumnsToFit()}
           />
         </ProCard>
       </PageContainer>
@@ -224,7 +231,7 @@ const AgreementPage: FC = () => {
             rules={[{ required: true, message: 'Hãy chọn phòng!' }]}
           >
             <Select>
-              {foreignKey.room.map((room: any) => (
+              {foreignKey.room!.map(room => (
                 <Select.Option value={room.id} key={room.id}>
                   {room.name}
                 </Select.Option>
@@ -238,7 +245,7 @@ const AgreementPage: FC = () => {
             rules={[{ required: true, message: 'Hãy chọn khách hàng!' }]}
           >
             <Select mode='multiple'>
-              {foreignKey.customer.map((customer: any) => (
+              {foreignKey.customer!.map(customer => (
                 <Select.Option value={customer.id} key={customer.id}>
                   {customer.fullName}
                 </Select.Option>
@@ -254,11 +261,13 @@ const AgreementPage: FC = () => {
           >
             <DatePicker.RangePicker
               style={{ width: '100%' }}
-              format={['DD/MM/YYYY', 'DD/MM/YYYY']}
+              picker='month'
+              format={['MM/YYYY', 'MM/YYYY']}
               ranges={{
                 '1 tháng': [moment(), moment().add(1, 'months')],
                 '3 tháng': [moment(), moment().add(3, 'months')],
-                '6 tháng': [moment(), moment().add(6, 'months')]
+                '6 tháng': [moment(), moment().add(6, 'months')],
+                '1 năm': [moment(), moment().add(12, 'months')]
               }}
             />
           </Form.Item>
