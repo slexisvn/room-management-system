@@ -1,25 +1,14 @@
-import { FC, RefObject, useEffect, useRef, useState } from 'react';
+import { FC, RefObject, useRef, useState } from 'react';
 import { Button } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import KindOfRoomGrid from './Grid';
 import KindOfRoomModal from './Modal';
 import { KindOfRoomGridRef, KindOfRoomModalRef, KindOfRoomPageProps } from './interface';
 
-const KindOfRoomPage: FC<KindOfRoomPageProps> = ({ changeTourStep, changeTourOpen }) => {
+const KindOfRoomPage: FC<KindOfRoomPageProps> = ({ changeTourStep }) => {
   const [edit, setEdit] = useState('');
   const kindOfRoomGridRef: RefObject<KindOfRoomGridRef> = useRef(null);
   const kindOfRoomModalRef: RefObject<KindOfRoomModalRef> = useRef(null);
-
-  useEffect(() => {
-    setTimeout(() => {
-      changeTourStep(3);
-
-      setTimeout(() => {
-        changeTourOpen(false);
-      }, 1500);
-    }, 4000);
-    // eslint-disable-next-line
-  }, []);
 
   return (
     <PageContainer
@@ -30,7 +19,7 @@ const KindOfRoomPage: FC<KindOfRoomPageProps> = ({ changeTourStep, changeTourOpe
             kindOfRoomModalRef.current!.openModal();
             setTimeout(() => {
               changeTourStep(2);
-            }, 300);
+            }, 200);
           }}
         >
           Thêm mới
@@ -54,8 +43,7 @@ const KindOfRoomPage: FC<KindOfRoomPageProps> = ({ changeTourStep, changeTourOpe
           kindOfRoomGridRef.current!.fetchData();
 
           setTimeout(() => {
-            changeTourOpen(true);
-            changeTourStep(4);
+            changeTourStep(3);
           }, 300);
         }}
       />

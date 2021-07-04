@@ -13,10 +13,9 @@ interface IForeignKey {
 
 export interface RoomPageProps {
   changeTourStep: Dispatch<SetStateAction<number>>;
-  changeTourOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const RoomPage: FC<RoomPageProps> = ({ changeTourStep, changeTourOpen }) => {
+const RoomPage: FC<RoomPageProps> = ({ changeTourStep }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const [rowData, setRowData] = useState<IRoom[]>([]);
   const [edit, setEdit] = useState('');
@@ -40,14 +39,6 @@ const RoomPage: FC<RoomPageProps> = ({ changeTourStep, changeTourOpen }) => {
   useEffect(() => {
     fetchRoomData();
     fetchForeignKeyData();
-
-    setTimeout(() => {
-      changeTourStep(7);
-
-      setTimeout(() => {
-        changeTourOpen(false);
-      }, 1500);
-    }, 4000);
     // eslint-disable-next-line
   }, []);
 
@@ -95,9 +86,8 @@ const RoomPage: FC<RoomPageProps> = ({ changeTourStep, changeTourOpen }) => {
     });
 
     setTimeout(() => {
-      changeTourOpen(true);
-      changeTourStep(8);
-    }, 300);
+      changeTourStep(6);
+    }, 200);
   };
 
   const handleModalCancel = () => {
@@ -134,8 +124,8 @@ const RoomPage: FC<RoomPageProps> = ({ changeTourStep, changeTourOpen }) => {
             onClick={() => {
               setVisibleModal(true);
               setTimeout(() => {
-                changeTourStep(6);
-              }, 300);
+                changeTourStep(5);
+              }, 200);
             }}
           >
             Thêm mới

@@ -23,5 +23,4 @@ export interface KindOfRoomGridRef {
 
 export interface KindOfRoomPageProps {
   changeTourStep: Dispatch<SetStateAction<number>>;
-  changeTourOpen: Dispatch<SetStateAction<boolean>>;
 }

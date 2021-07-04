@@ -1,5 +1,5 @@
 import { FC, useContext, useEffect, useState } from 'react';
-import { Avatar, Menu, Dropdown } from 'antd';
+import { Avatar, Menu, Dropdown, Modal } from 'antd';
 import type { MenuClickEventHandler } from 'rc-menu/lib/interface';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import ProLayout from '@ant-design/pro-layout';
@@ -32,12 +32,8 @@ const Dashboard: FC = () => {
       content: 'Tạo mới loại phòng!'
     },
     {
-      selector: '.ant-modal-wrap .ant-modal-body',
+      selector: '.ant-modal-wrap .ant-modal',
       content: 'Tạo thông tin loại phòng!'
-    },
-    {
-      selector: '.ant-modal-wrap .ant-modal-content .ant-modal-footer .ant-btn.ant-btn-primary',
-      content: 'Sau đó nhấn OK!'
     },
     {
       selector: 'ul.ant-menu-inline li.ant-menu-item:nth-child(2)',
@@ -48,12 +44,8 @@ const Dashboard: FC = () => {
       content: 'Tạo mới phòng!'
     },
     {
-      selector: '.ant-modal-wrap .ant-modal-body',
+      selector: '.ant-modal-wrap .ant-modal',
       content: 'Tạo thông tin phòng!'
-    },
-    {
-      selector: '.ant-modal-wrap .ant-modal-content .ant-modal-footer .ant-btn.ant-btn-primary',
-      content: 'Sau đó nhấn OK!'
     },
     {
       selector: 'ul.ant-menu-inline li.ant-menu-item:nth-child(4)',
@@ -64,12 +56,8 @@ const Dashboard: FC = () => {
       content: 'Tạo mới khách hàng!'
     },
     {
-      selector: '.ant-modal-wrap .ant-modal-body',
+      selector: '.ant-modal-wrap .ant-modal',
       content: 'Tạo thông tin khách hàng!'
-    },
-    {
-      selector: '.ant-modal-wrap .ant-modal-content .ant-modal-footer .ant-btn.ant-btn-primary',
-      content: 'Sau đó nhấn OK!'
     },
     {
       selector: 'ul.ant-menu-inline li.ant-menu-item:nth-child(5))',
@@ -80,12 +68,8 @@ const Dashboard: FC = () => {
       content: 'Tạo mới hợp đồng!'
     },
     {
-      selector: '.ant-modal-wrap .ant-modal-body',
+      selector: '.ant-modal-wrap .ant-modal',
       content: 'Tạo thông tin hợp đồng!'
-    },
-    {
-      selector: '.ant-modal-wrap .ant-modal-content .ant-modal-footer .ant-btn.ant-btn-primary',
-      content: 'Sau đó nhấn OK!'
     }
   ];
 
@@ -94,7 +78,13 @@ const Dashboard: FC = () => {
 
     if (!hasTourGuide) {
       // localStorage.setItem('TOUR_GUIDE', 'TOUR_GUIDE')
-      setIsTourOpen(true);
+      Modal.confirm({
+        content: 'Bắt đầu hướng dẫn?',
+        onOk: () => {
+          setIsTourOpen(true);
+          setTourStep(0);
+        }
+      });
     }
   }, []);
 
@@ -138,7 +128,7 @@ const Dashboard: FC = () => {
               }
 
               if (item.path === '/room') {
-                setTourStep(5);
+                setTourStep(4);
               }
             }}
           >
@@ -149,17 +139,11 @@ const Dashboard: FC = () => {
       >
         <Switch>
           <Route render={() => <AnalysisPage />} key='analysis' path='/analysis' />
-          <Route
-            render={() => <RoomPage changeTourStep={setTourStep} changeTourOpen={setIsTourOpen} />}
-            key='room'
-            path='/room'
-          />
+          <Route render={() => <RoomPage changeTourStep={setTourStep} />} key='room' path='/room' />
           <Route render={() => <CustomerPage />} key='customer' path='/customer' />
           <Route render={() => <AgreementPage />} key='agreement' path='/agreement' />
           <Route
-            render={() => (
-              <KindOfRoomPage changeTourStep={setTourStep} changeTourOpen={setIsTourOpen} />
-            )}
+            render={() => <KindOfRoomPage changeTourStep={setTourStep} />}
             key='kind-of-room'
             path='/kind-of-room'
           />
@@ -169,6 +153,7 @@ const Dashboard: FC = () => {
         </Switch>
         <Tour
           steps={steps}
+          disableFocusLock
           showCloseButton={false}
           showButtons={false}
           showNavigation={false}

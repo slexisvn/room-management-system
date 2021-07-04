@@ -2,7 +2,7 @@
   "name": "room-management-system",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://room-management-system.com",
+  "homepage": "http://slexisvn.github.io/room-management-system",
   "dependencies": {
     "@ant-design/charts": "^1.1.20",
     "@ant-design/pro-card": "^1.14.3",
