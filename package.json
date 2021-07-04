@@ -31,7 +31,9 @@
     "build": "craco build",
     "test": "craco test",
     "pretty-quick": "pretty-quick",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
