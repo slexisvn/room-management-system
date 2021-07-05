@@ -34,7 +34,7 @@ const KindOfRoomPage: FC<KindOfRoomPageProps> = ({ onChangeTourStep }) => {
       header={{ title: 'Quản lý loại phòng' }}
     >
       <KindOfRoomGrid
-        edit={id => setEdit(id)}
+        onEdit={setEdit}
         ref={kindOfRoomGridRef}
         getKindOfRoomModalRef={() => kindOfRoomModalRef.current!}
       />

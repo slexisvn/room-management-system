@@ -6,7 +6,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { KindOfRoomGridProps, KindOfRoomGridRef } from './interface';
 
 const KindOfRoomGrid = forwardRef<KindOfRoomGridRef, KindOfRoomGridProps>(
-  ({ getKindOfRoomModalRef, edit }, ref) => {
+  ({ getKindOfRoomModalRef, onEdit }, ref) => {
     const db = window.roomManagementSystemDB;
     const [rowData, setRowData] = useState<IKindOfRoom[]>([]);
     const formatter = new Intl.NumberFormat('en-US', {
@@ -52,7 +52,7 @@ const KindOfRoomGrid = forwardRef<KindOfRoomGridRef, KindOfRoomGridProps>(
 
     const handleEdit = (data: IKindOfRoom) => {
       const { getForm, openModal } = getKindOfRoomModalRef();
-      edit(data.id);
+      onEdit(data.id);
       openModal();
       getForm().setFieldsValue(data);
     };

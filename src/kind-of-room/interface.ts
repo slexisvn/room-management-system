@@ -13,7 +13,7 @@ export interface KindOfRoomModalRef {
 
 export interface KindOfRoomGridProps {
   getKindOfRoomModalRef: () => KindOfRoomModalRef;
-  edit: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
 export interface KindOfRoomGridRef {

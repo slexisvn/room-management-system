@@ -246,7 +246,7 @@ const CustomerPage: FC<CustomerPageProps> = ({ onChangeTourStep }) => {
           </Form.Item>
 
           <Form.Item label='Số điện thoại' name='phoneNumber'>
-            <InputNumber style={{ width: '100%' }} />
+            <Input style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.Item label='Nghề nghiệp' name='job' style={{ marginBottom: 0 }}>
