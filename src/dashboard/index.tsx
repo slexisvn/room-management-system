@@ -23,10 +23,10 @@ const Dashboard: FC = () => {
   const [pathname, setPathname] = useState('/analysis');
   const { setAuthenticate } = useContext(AuthenticationContext);
   const timeout = useRef<any>(null);
-  const hasTourGuide = localStorage.getItem('TOUR_GUIDE');
+  const hasTourGuide = useRef(localStorage.getItem('TOUR_GUIDE'));
 
   useEffect(() => {
-    if (!hasTourGuide) {
+    if (!hasTourGuide.current) {
       localStorage.setItem('TOUR_GUIDE', 'TOUR_GUIDE');
       Modal.confirm({
         content: 'Bắt đầu hướng dẫn?',
@@ -35,7 +35,7 @@ const Dashboard: FC = () => {
         }
       });
     }
-  }, [hasTourGuide]);
+  }, []);
 
   const handleTourClose = () => {
     if (timeout.current) {
@@ -50,10 +50,9 @@ const Dashboard: FC = () => {
   const handleListItemClick = (path: string) => {
     setPathname(path!);
 
-    if (hasTourGuide) {
+    if (hasTourGuide.current) {
       return;
     }
-
     if (path === '/kind-of-room') {
       setTourStep(1);
     }
@@ -115,7 +114,7 @@ const Dashboard: FC = () => {
   };
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename='/room-management-system'>
       <ProLayout
         {...routes}
         location={{

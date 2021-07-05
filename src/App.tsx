@@ -8,7 +8,7 @@ const App = () => {
   const { authenticate } = useContext(AuthenticationContext);
 
   return (
-    <BrowserRouter basename='/'>
+    <BrowserRouter basename='/room-management-system'>
       <Switch>
         <Route
           path='/'
