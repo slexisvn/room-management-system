@@ -10,7 +10,9 @@ import AuthenticationProvider from './authentication-provider';
 import reportWebVitals from './reportWebVitals';
 import './style';
 
-LicenseManager.setLicenseKey('NDEwMjMzMzIwMDAwMA==4776ae9eddc069aad222a64b09b9e834');
+LicenseManager.setLicenseKey(
+  '[TRIAL]_16_May_2020_[v2]_MTU4OTU4NzIwMDAwMA==b03f1f5b63303eabbc3b42a734fcc666'
+);
 
 window.roomManagementSystemDB = new Dexie('room-management-system');
 window.roomManagementSystemDB!.version(1).stores({
