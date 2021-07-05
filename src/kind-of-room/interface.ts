@@ -1,5 +1,4 @@
 import { FormInstance } from 'antd';
-import { Dispatch, SetStateAction } from 'react';
 
 export interface KindOfRoomModalProps {
   edit: string;
@@ -22,5 +21,5 @@ export interface KindOfRoomGridRef {
 }
 
 export interface KindOfRoomPageProps {
-  changeTourStep: Dispatch<SetStateAction<number>>;
+  onChangeTourStep: (step: number, time?: number) => void;
 }

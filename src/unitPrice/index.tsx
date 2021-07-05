@@ -8,7 +8,11 @@ import { ValueFormatterParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import moment from 'moment';
 
-const UnitPricePage: FC = () => {
+export interface UnitPricePageProps {
+  onChangeTourStep: (step: number, time?: number) => void;
+}
+
+const UnitPricePage: FC<UnitPricePageProps> = ({ onChangeTourStep }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const [rowData, setRowData] = useState<IUnitPrice[]>([]);
   const [edit, setEdit] = useState('');
@@ -75,6 +79,8 @@ const UnitPricePage: FC = () => {
           fetchData();
         });
     });
+
+    onChangeTourStep(15, 200);
   };
 
   const handleModalCancel = () => {
@@ -106,7 +112,13 @@ const UnitPricePage: FC = () => {
     <>
       <PageContainer
         extra={[
-          <Button type='primary' onClick={() => setVisibleModal(true)}>
+          <Button
+            type='primary'
+            onClick={() => {
+              setVisibleModal(true);
+              onChangeTourStep(14, 400);
+            }}
+          >
             Thêm mới
           </Button>
         ]}
@@ -189,7 +201,7 @@ const UnitPricePage: FC = () => {
 
       <Modal
         visible={visibleModal}
-        title={edit ? 'Chỉnh sửa' : 'Thêm loại phòng mới'}
+        title={edit ? 'Chỉnh sửa' : 'Thêm đơn giá mới'}
         centered
         cancelText='Hủy'
         onOk={handleModalOk}
@@ -197,7 +209,7 @@ const UnitPricePage: FC = () => {
       >
         <Form name='add-form' form={form} labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
           <Form.Item
-            label='Điện'
+            label='Đơn giá Điện'
             name='electricity'
             rules={[{ required: true, message: 'Hãy nhập đơn giá điện!' }]}
           >
@@ -209,7 +221,7 @@ const UnitPricePage: FC = () => {
           </Form.Item>
 
           <Form.Item
-            label='Nước'
+            label='Đơn giá nước'
             name='water'
             rules={[{ required: true, message: 'Hãy nhập đơn giá nước!' }]}
           >

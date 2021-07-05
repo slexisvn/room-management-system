@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Button, Modal, Form, Input, message, Tooltip, Select } from 'antd';
@@ -12,10 +12,10 @@ interface IForeignKey {
 }
 
 export interface RoomPageProps {
-  changeTourStep: Dispatch<SetStateAction<number>>;
+  onChangeTourStep: (step: number, time?: number) => void;
 }
 
-const RoomPage: FC<RoomPageProps> = ({ changeTourStep }) => {
+const RoomPage: FC<RoomPageProps> = ({ onChangeTourStep }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const [rowData, setRowData] = useState<IRoom[]>([]);
   const [edit, setEdit] = useState('');
@@ -85,9 +85,7 @@ const RoomPage: FC<RoomPageProps> = ({ changeTourStep }) => {
         });
     });
 
-    setTimeout(() => {
-      changeTourStep(6);
-    }, 200);
+    onChangeTourStep(6, 200);
   };
 
   const handleModalCancel = () => {
@@ -123,9 +121,7 @@ const RoomPage: FC<RoomPageProps> = ({ changeTourStep }) => {
             type='primary'
             onClick={() => {
               setVisibleModal(true);
-              setTimeout(() => {
-                changeTourStep(5);
-              }, 200);
+              onChangeTourStep(5, 400);
             }}
           >
             Thêm mới

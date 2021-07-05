@@ -8,7 +8,11 @@ import ProCard from '@ant-design/pro-card';
 import { AgGridReact } from 'ag-grid-react';
 import { ValueFormatterParams } from 'ag-grid-community';
 
-const CustomerPage: FC = () => {
+export interface CustomerPageProps {
+  onChangeTourStep: (step: number, time?: number) => void;
+}
+
+const CustomerPage: FC<CustomerPageProps> = ({ onChangeTourStep }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const [rowData, setRowData] = useState<ICustomer[]>([]);
   const [edit, setEdit] = useState('');
@@ -69,6 +73,8 @@ const CustomerPage: FC = () => {
           fetchData();
         });
     });
+
+    onChangeTourStep(9, 200);
   };
 
   const handleModalCancel = () => {
@@ -100,7 +106,13 @@ const CustomerPage: FC = () => {
     <>
       <PageContainer
         extra={[
-          <Button type='primary' onClick={() => setVisibleModal(true)}>
+          <Button
+            type='primary'
+            onClick={() => {
+              setVisibleModal(true);
+              onChangeTourStep(8, 400);
+            }}
+          >
             Thêm mới
           </Button>
         ]}

@@ -1,6 +1,6 @@
-import { FC, useEffect, useState } from 'react';
+import { createRef, FC, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, PrinterOutlined } from '@ant-design/icons';
 import {
   Button,
   Modal,
@@ -16,13 +16,30 @@ import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
 import { AgGridReact } from 'ag-grid-react';
 import moment from 'moment';
+import ReactToPrint from 'react-to-print';
+import './style';
 
 interface IForeignKey {
   room: IRoom[];
   unitPrice: IUnitPrice[];
 }
 
-const BillPage: FC = () => {
+interface IPrintData {
+  room: string;
+  electricityBill: string;
+  amountOfElectricity: string;
+  waterBill: string;
+  amountOfWater: string;
+  parkingFee: string;
+  junkMoney: string;
+  total: string;
+}
+
+export interface BillPageProps {
+  onChangeTourStep: (step: number, time?: number) => void;
+}
+
+const BillPage: FC<BillPageProps> = ({ onChangeTourStep }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const [rowData, setRowData] = useState<IBill[]>([]);
   const [edit, setEdit] = useState('');
@@ -113,6 +130,7 @@ const BillPage: FC = () => {
           fetchData();
         });
     });
+    onChangeTourStep(18, 200);
   };
 
   const handleModalCancel = () => {
@@ -141,7 +159,13 @@ const BillPage: FC = () => {
     <>
       <PageContainer
         extra={[
-          <Button type='primary' onClick={() => setVisibleModal(true)}>
+          <Button
+            type='primary'
+            onClick={() => {
+              setVisibleModal(true);
+              onChangeTourStep(17, 400);
+            }}
+          >
             Thêm mới
           </Button>
         ]}
@@ -207,6 +231,84 @@ const BillPage: FC = () => {
                 width: 100,
                 floatingFilter: false,
                 cellRendererFramework: (params: any) => {
+                  if (!params.data) {
+                    const printData: IPrintData[] = params.node?.allLeafChildren?.map(
+                      (child: any) => child.data
+                    );
+                    const printRef = createRef<any>();
+
+                    return (
+                      <>
+                        <ReactToPrint
+                          trigger={() => <Button icon={<PrinterOutlined />} />}
+                          content={() => printRef.current}
+                        />
+                        <div style={{ display: 'none' }}>
+                          <div ref={printRef}>
+                            <style>
+                              {`
+                              #print-container {
+                                padding: 16px;
+                              }
+
+                              #print-container h2 {
+                                font-weight: bold;
+                                text-align: center;
+                              }
+
+                              #print-container table, th, td {
+                                border: 1px solid black;
+                                font-size: 14px;
+                              }
+
+                              #print-container table {
+                                width: 100%;
+                                border-collapse: collapse;
+                              }
+                            `}
+                            </style>
+                            <div id='print-container'>
+                              <h2>Tháng {params.node.key}</h2>
+
+                              <table cellPadding={8}>
+                                <tr>
+                                  <th rowSpan={2}>SP</th>
+                                  <th colSpan={2}>TIỀN ĐIỆN</th>
+                                  <th colSpan={2}>TIỀN NƯỚC</th>
+                                  <th rowSpan={2}>TIỀN XE</th>
+                                  <th rowSpan={2}>TIỀN RÁC</th>
+                                  <th rowSpan={2}>TỔNG CỘNG</th>
+                                  <th rowSpan={2}>SP</th>
+                                </tr>
+
+                                <tr>
+                                  <th>TIÊU THỤ (kW)</th>
+                                  <th>THÀNH TIỀN</th>
+                                  <th>TIÊU THỤ (m3)</th>
+                                  <th>THÀNH TIỀN</th>
+                                </tr>
+
+                                {printData.map((data, index) => (
+                                  <tr key={index}>
+                                    <td>{data.room}</td>
+                                    <td>{data.amountOfElectricity}</td>
+                                    <td>{data.electricityBill}</td>
+                                    <td>{data.amountOfWater}</td>
+                                    <td>{data.waterBill}</td>
+                                    <td>{data.parkingFee}</td>
+                                    <td>{data.junkMoney}</td>
+                                    <td>{data.total}</td>
+                                    <td>{data.room}</td>
+                                  </tr>
+                                ))}
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  }
+
                   if (!params.data || (params.data && moment().isAfter(moment(params.data.date)))) {
                     return null;
                   }

@@ -5,23 +5,29 @@ import KindOfRoomGrid from './Grid';
 import KindOfRoomModal from './Modal';
 import { KindOfRoomGridRef, KindOfRoomModalRef, KindOfRoomPageProps } from './interface';
 
-const KindOfRoomPage: FC<KindOfRoomPageProps> = ({ changeTourStep }) => {
+const KindOfRoomPage: FC<KindOfRoomPageProps> = ({ onChangeTourStep }) => {
   const [edit, setEdit] = useState('');
   const kindOfRoomGridRef: RefObject<KindOfRoomGridRef> = useRef(null);
   const kindOfRoomModalRef: RefObject<KindOfRoomModalRef> = useRef(null);
 
+  const handleAdd = () => {
+    kindOfRoomModalRef.current!.openModal();
+    onChangeTourStep(2, 200);
+  };
+
+  const handleOk = () => {
+    if (edit) {
+      setEdit('');
+    }
+    kindOfRoomGridRef.current!.fetchData();
+
+    onChangeTourStep(3, 400);
+  };
+
   return (
     <PageContainer
       extra={[
-        <Button
-          type='primary'
-          onClick={() => {
-            kindOfRoomModalRef.current!.openModal();
-            setTimeout(() => {
-              changeTourStep(2);
-            }, 200);
-          }}
-        >
+        <Button type='primary' onClick={handleAdd}>
           Thêm mới
         </Button>
       ]}
@@ -36,16 +42,7 @@ const KindOfRoomPage: FC<KindOfRoomPageProps> = ({ changeTourStep }) => {
         ref={kindOfRoomModalRef}
         edit={edit}
         onCancel={() => setEdit('')}
-        onOk={() => {
-          if (edit) {
-            setEdit('');
-          }
-          kindOfRoomGridRef.current!.fetchData();
-
-          setTimeout(() => {
-            changeTourStep(3);
-          }, 300);
-        }}
+        onOk={handleOk}
       />
     </PageContainer>
   );

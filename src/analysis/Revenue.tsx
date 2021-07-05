@@ -2,12 +2,9 @@ import { FC, useEffect, useState } from 'react';
 import { Typography, DatePicker } from 'antd';
 import moment from 'moment';
 import Line from '@ant-design/charts/es/line';
+import { ICustomAgreements, ICustomRoom, RevenueProps } from './interface';
 
-type ICustomRoom = IRoom & { kindOfRoom: IKindOfRoom };
-
-type ICustomAgreements = (IAgreement & { room: ICustomRoom })[];
-
-const Revenue: FC = () => {
+const Revenue: FC<RevenueProps> = () => {
   const db = window.roomManagementSystemDB;
   const [agreementData, setAgreementData] = useState<ICustomAgreements>([]);
   const [monthValue, setMonthValue] = useState<number[]>([]);

@@ -12,7 +12,11 @@ interface IForeignKey {
   customer: ICustomer[];
 }
 
-const AgreementPage: FC = () => {
+export interface AgreementPageProps {
+  onChangeTourStep: (step: number, time?: number) => void;
+}
+
+const AgreementPage: FC<AgreementPageProps> = ({ onChangeTourStep }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const [rowData, setRowData] = useState<IAgreement[]>([]);
   const [edit, setEdit] = useState('');
@@ -113,6 +117,8 @@ const AgreementPage: FC = () => {
           fetchData();
         });
     });
+
+    onChangeTourStep(12, 200);
   };
 
   const handleModalCancel = () => {
@@ -142,7 +148,13 @@ const AgreementPage: FC = () => {
     <>
       <PageContainer
         extra={[
-          <Button type='primary' onClick={() => setVisibleModal(true)}>
+          <Button
+            type='primary'
+            onClick={() => {
+              setVisibleModal(true);
+              onChangeTourStep(11, 400);
+            }}
+          >
             Thêm mới
           </Button>
         ]}
